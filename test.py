@@ -50,27 +50,34 @@ srcField.setMesh(srcMesh)
 srcField.fillFromAnalytic(1,"7-sqrt((x-5.)*(x-5.)+(y-5.)*(y-5.))")
 srcField.getArray().setInfoOnComponent(0, "powercell [W]")
 
+#transfert the field from src to trg
 srcField.setNature(mc.IntensiveMaximum)
+srcField.setName("srcFieldName")
+trgFieldIM = remap.transferField(srcField,1e300) #how does it works ? - reverseTransferField() also exist
+trgFieldIM.setName("trgFieldIMName")
 
-remap.transferField(srcField, 1e300)
-
-trgFieldCV = remap.transferField(srcField,1e300)
-
+#With an IntensiveMaximum field
 integSource = srcField.integral(True)[0]
-integTarget =  trgFieldCV.integral(True)[0]
+integTarget =  trgFieldIM.integral(True)[0]
 print("IntensiveMaximum -- integrals: %lf == %lf" % (integSource, integTarget))
 accSource = srcField.getArray().accumulate()[0]
-accTarget = trgFieldCV.getArray().accumulate()[0]
+accTarget = trgFieldIM.getArray().accumulate()[0]
 print("IntensiveMaximum -- sums: %lf != %lf" % (accSource, accTarget))
 
+#With an ExtensiveConservation field
 srcField.setNature(mc.ExtensiveConservation)
-trgFieldI = remap.transferField(srcField,1e300)
+trgFieldEC = remap.transferField(srcField,1e300)
+trgFieldEC.setName("trgFieldECName")
 
 integSource = srcField.integral(True)[0]
-integTarget =  trgFieldI.integral(True)[0]
+integTarget =  trgFieldEC.integral(True)[0]
 print("ExtensiveConservation -- integrals: %lf != %lf" % (integSource, integTarget))
-
 accSource = srcField.getArray().accumulate()[0]
-accTarget = trgFieldI.getArray().accumulate()[0]
+accTarget = trgFieldEC.getArray().accumulate()[0]
 print("ExtensiveConservation -- sums: %lf == %lf" % (accSource, accTarget))
 
+
+#Write fields in files
+srcField.writeVTK("srcField.vtu")
+trgFieldIM.writeVTK("trgFieldIM.vtu")
+trgFieldEC.writeVTK("trgFieldEC.vtu")
